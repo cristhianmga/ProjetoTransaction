@@ -49,14 +49,43 @@ namespace ProjetoTransactionApplication.Services
             return await CreateTransaction(request, Enum.TransactionStatus.InQueue);
         }
 
+        public async Task<TransactionResponseDto> GetStatusByTransactionId(Guid transactionId)
+        {
+            _logger.LogInformation($"{DateTime.Now} | Initiate consultation for transaction in database");
+            var response = await _repository.GetByIdAsync(transactionId);
+            if (response != null)
+            {
+                TransactionResponseDto responseDto = new TransactionResponseDto()
+                {
+                    Status = EnumToString(response.Status),
+                    Message = response.Error
+                };
+                _logger.LogInformation($"{DateTime.Now} | Ending consultation in database");
+                return responseDto;
+            }
+            else
+            {
+                TransactionResponseDto responseDto = new TransactionResponseDto()
+                {
+                    Status = EnumToString(3),
+                    Message = "Transaction Not Found"
+                };
+                _logger.LogInformation($"{DateTime.Now} | Ending consultation in database");
+                return responseDto;
+            }
+        }
+
 
         private async Task<FundTransferResponseDto> CreateTransaction(FundTransferRequestDto request,Enum.TransactionStatus status, string error = null)
         {
+            _logger.LogInformation($"{DateTime.Now} | Initiate save in database");
             Transaction transaction = _mapper.Map<Transaction>(request);
             transaction.Status = (int)status;
             transaction.Error = error;
             var transactionBd = await _repository.AddAsync(transaction);
             await _repository.SaveChangesAsync();
+
+            _logger.LogInformation($"{DateTime.Now} | Transaction save in database");
 
             FundTransferResponseDto response = new FundTransferResponseDto()
             {
@@ -68,7 +97,24 @@ namespace ProjetoTransactionApplication.Services
 
         private async Task SendToQueue(string transactionId)
         {
+
+            _logger.LogInformation($"{DateTime.Now} | Sending transaction to queue");
             await _sendQueueService.SendTransaction(transactionId);
+        }
+
+        private string EnumToString(int status)
+        {
+            switch (status)
+            {
+                case 0:
+                    return "InQueue";
+                case 1:
+                    return "Processing";
+                case 2:
+                    return "Confirmed";
+                default:
+                    return "Error";
+            }
         }
     }
 }

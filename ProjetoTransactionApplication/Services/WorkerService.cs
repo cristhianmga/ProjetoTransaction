@@ -46,10 +46,12 @@ namespace ProjetoTransactionApplication.Services
 
         private async Task UpdateTransactBd(string transactionId,Enum.TransactionStatus status)
         {
+            _logger.LogInformation($"{DateTime.Now} | Initiate update Transaction status");
             var response = await _repository.GetByIdAsync(new Guid(transactionId));
             response.Status = (int)status;
             await _repository.UpdateAsync(response);
             await _repository.SaveChangesAsync();
+            _logger.LogInformation($"{DateTime.Now} | Ending update Transaction status");
         }
     }
 }

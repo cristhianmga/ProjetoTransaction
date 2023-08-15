@@ -18,6 +18,8 @@ namespace ProjetoTransactionApplication.Services
 
         public async Task<bool> VerifyAccountNumber(string account)
         {
+
+            _logger.LogInformation($"{DateTime.Now} | Initiate verify account number");
             var response = await _httpClient.GetAsync("/api/Account/" + account);
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode) 
@@ -30,6 +32,7 @@ namespace ProjetoTransactionApplication.Services
 
         public async Task<bool> VerifyBalance(string account,decimal value)
         {
+            _logger.LogInformation($"{DateTime.Now} | Initiate verify balance account");
             var response = await _httpClient.GetAsync("/api/Account/" + account);
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
